@@ -76,7 +76,6 @@ class EvalCeleba_Test():
                 for index, batch in enumerate(train_loader):
                     image, labels = batch['imgs'].to(self.args.device), batch['labels'].to(self.args.device)  
                     latent = self.encoder(image)['cond']
-                    breakpoint()
                     logits = classifier(latent)   
                     # loss = loss_fn(logits, labels) 
                     loss = loss_fn.compute(logits, labels, return_dict=False)
