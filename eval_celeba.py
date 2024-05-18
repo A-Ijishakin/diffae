@@ -180,7 +180,7 @@ class EvalCeleba_Test():
                         mask=None):
         for batch in eval_loader: 
             image, labels = batch['imgs'].to(self.args.device), batch['labels'].to(self.args.device)  
-            latent = self.encoder(image) 
+            latent = self.encoder(image)['cond']
             predictions = classifier(latent)    
             
             y_gt.append(labels.detach().cpu())
