@@ -4,7 +4,7 @@ sys.path.append('../')
 import torch 
 import numpy as np 
 import torch.nn as nn  
-from datasets import CelebA_Dataset 
+from dataset import CelebA_Dataset 
 import multiprocessing 
 from torch.optim import Adam     
 from metric import MultiTaskLoss 
