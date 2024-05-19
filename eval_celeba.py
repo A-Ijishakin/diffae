@@ -21,21 +21,33 @@ parser.add_argument('--num_epochs', default=1, type=int)
 parser.add_argument('--batch_size', default=128, type=int) 
 parser.add_argument('--ext', default='', type=str) 
 parser.add_argument('--check_val', default=False, type=bool) 
+
 args = parser.parse_args()  
- 
 class EvalCeleba_Test():
     def __init__(self, args):
         self.args = args     
         device = self.args.device 
-        conf = ffhq256_autoenc()
-        # print(conf.name)
-        model = LitModel(conf)
-        state = torch.load('last.ckpt', map_location='cpu')
-        model.load_state_dict(state['state_dict'], strict=False)
-        model.ema_model.eval()
-        model.ema_model.to(device) 
-        
-        self.encoder = model.ema_model.encode 
+        if args.ext != 'ffhq': 
+            conf = celeba64d2c_autoenc() 
+            model = LitModel(conf)
+            state = torch.load('CelebA/last.ckpt', map_location='cpu') 
+            model.load_state_dict(state['state_dict'], strict=False)
+            model.ema_model.eval()
+            model.ema_model.to(device) 
+            
+            self.encoder = model.ema_model.encode 
+            
+            
+        else:
+            conf = ffhq256_autoenc()
+            # print(conf.name)
+            model = LitModel(conf)
+            state = torch.load('last.ckpt', map_location='cpu')
+            model.load_state_dict(state['state_dict'], strict=False)
+            model.ema_model.eval()
+            model.ema_model.to(device) 
+            
+            self.encoder = model.ema_model.encode 
         
         wandb.init(project="HSpace-SAEs", entity="a-ijishakin",
                         name=f'PDAE testing {args.ext}')
@@ -43,18 +55,14 @@ class EvalCeleba_Test():
         self.config = wandb.config
         
     def train(self):
-
-        
         train_loader = DataLoader(dataset = CelebA_Dataset(mode=0, dataset=self.args.ext) , batch_size=self.args.batch_size, 
                                 shuffle=True, 
                                 num_workers=8, 
                                 persistent_workers=True) 
-        
         val_loader = DataLoader(dataset = CelebA_Dataset(mode=1) , batch_size=self.args.batch_size, 
                                 shuffle=True, 
                                 num_workers=8, 
                                 persistent_workers=True)  
-        
         length = len(train_loader) 
 
         total_iters  = length + 60 if self.args.check_val else length 
@@ -219,5 +227,5 @@ class EvalCeleba_Test():
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')  
-    # EvalCeleba_Test(args=args).train()  
+    EvalCeleba_Test(args=args).train()  
     EvalCeleba_Test(args=args).eval_accuracy() 
